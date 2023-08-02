@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class WeatherDetail{
   final int id;
   final String icon;
@@ -28,7 +30,6 @@ class MainWeatherData{
   final int sea_level;
   final int grnd_level;
   final int humidity;
-  final int temp_kf;
   MainWeatherData({
     required this.temp,
     required this.temp_min,
@@ -38,7 +39,6 @@ class MainWeatherData{
     required this.sea_level,
     required this.grnd_level,
     required this.humidity,
-    required this.temp_kf,
   });
   factory MainWeatherData.fromMap(Map<String, dynamic> map) {
     return MainWeatherData(
@@ -50,7 +50,6 @@ class MainWeatherData{
       sea_level: map['sea_level'],
       grnd_level: map['grnd_level'],
       humidity: map['humidity'],
-      temp_kf: map['temp_kf'],
     );
   }
 }
