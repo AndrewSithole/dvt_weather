@@ -5,17 +5,17 @@ import 'package:dvt_weather/data/providers/weather_api.dart';
 import 'package:geolocator/geolocator.dart';
 
 class WeatherRepository{
-  Future<WeatherObject> fetchDailyWeatherByPosition(Position position) async {
+  Future<WeatherObject> fetchDailyWeatherByPosition(Position position, String units) async {
     // Fetch weather data from OpenWeatherMap API.
-    var weatherData = await WeatherAPI.getDailyWeather(position);
+    var weatherData = await WeatherAPI.getDailyWeather(position, units);
     Map<String, dynamic> rawWeather = jsonDecode(weatherData.body);
     return WeatherObject.fromMap(rawWeather);
   }
-  Future<WeatherObject> fetchDailyWeatherByCity(String city) async {
+  Future<WeatherObject> fetchDailyWeatherByCity(String city, String units) async {
     debugPrint("fetching weather data");
     // Fetch weather data from OpenWeatherMap API.
     try{
-      var weatherData = await WeatherAPI.getDailyWeatherByCity(city);
+      var weatherData = await WeatherAPI.getDailyWeatherByCity(city, units);
       Map<String, dynamic> rawWeather = jsonDecode(weatherData.body);
       debugPrint(weatherData.body);
       return WeatherObject.fromMap(rawWeather);
@@ -23,21 +23,22 @@ class WeatherRepository{
       debugPrint(error.toString());
       return Future.error(error);
     }
-
   }
-  Future<List<WeatherObject>> fetchWeatherForecastByPosition(Position position) async {
+  Future<List<WeatherObject>> fetchWeatherForecastByPosition(Position position, String units) async {
     // Fetch weather data from OpenWeatherMap API.
-    var weatherData = await WeatherAPI.getWeeklyWeather(position);
+    var weatherData = await WeatherAPI.getWeeklyWeather(position, units);
     Map<String, dynamic> rawWeather = jsonDecode(weatherData.body);
-    List<WeatherObject> _weather = [];
-    rawWeather["list"].forEach((key, value) {
-      _weather.add(WeatherObject.fromMap(value));
+    List<WeatherObject> weather = [];
+    int i = 0;
+    rawWeather["list"].forEach((value) {
+      if (i%8==4)weather.add(WeatherObject.fromMap(value));
+      i++;
     });
-    return _weather;
+    return weather;
   }
-  Future<List<WeatherObject>> fetchWeatherForecastByCity(String city) async {
+  Future<List<WeatherObject>> fetchWeatherForecastByCity(String city, String units) async {
     // Fetch weather data from OpenWeatherMap API.
-    var weatherData = await WeatherAPI.getWeeklyWeatherByCity(city);
+    var weatherData = await WeatherAPI.getWeeklyWeatherByCity(city, units);
     Map<String, dynamic> rawWeather = jsonDecode(weatherData.body);
     List<WeatherObject> _weather = [];
     rawWeather["list"].forEach((key, value) {

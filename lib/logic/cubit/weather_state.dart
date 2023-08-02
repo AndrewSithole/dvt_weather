@@ -1,12 +1,15 @@
 part of 'weather_cubit.dart';
 
 @immutable
-abstract class WeatherState {}
+abstract class WeatherState {
+  WeatherData? weather;
+}
 
 class WeatherInitial extends WeatherState {}
 class WeatherLoading extends WeatherState {}
 class WeatherSuccess extends WeatherState {
-  final WeatherObject weatherObject;
-  WeatherSuccess(this.weatherObject);
+  WeatherSuccess(WeatherData weather){
+    this.weather = weather;
+  }
 }
 class WeatherError extends WeatherState {}

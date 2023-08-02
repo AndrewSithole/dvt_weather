@@ -1,31 +1,34 @@
 import 'dart:convert';
-
-import 'package:flutter/cupertino.dart';
+import 'package:intl/intl.dart';
+import 'package:dvt_weather/data/models/weather_model.dart';
+import 'package:dvt_weather/logic/cubit/weather_cubit.dart';
+import 'package:dvt_weather/utils/text_styles.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:dvt_weather/utils/colors.dart';
 import 'package:http/http.dart' as http;
+import 'package:nb_utils/nb_utils.dart';
 
 class AppHomeScreen extends StatefulWidget{
   @override
   State<AppHomeScreen> createState() => AppHomeScreenState();
 }
 class AppHomeScreenState extends State<AppHomeScreen>{
+  late WeatherCubit _cubit;
+
   Color _backgroundColor = appSunnyColor;
   bool _isLoading = false;
-  String _topImage = "assets/images/forest_sunny.png";
-  void setLoading(bool loading){
-    setState(() {
-      _isLoading = loading;
-    });
-  }
-  Future<Position> _determinePosition() async {
+
+  Future<Position> determinePosition() async {
     bool serviceEnabled;
     LocationPermission permission;
+    debugPrint("Getting location");
 
     // Test if location services are enabled.
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
+
       // Location services are not enabled don't continue
       // accessing the position and request users of the
       // App to enable the location services.
@@ -50,59 +53,150 @@ class AppHomeScreenState extends State<AppHomeScreen>{
       return Future.error(
           'Location permissions are permanently denied, we cannot request permissions.');
     }
+    try{
+      Position location = await Geolocator.getCurrentPosition();
+    }catch(error){
+      debugPrint("an error occurred");
+    }
+    Position location = await Geolocator.getCurrentPosition();
+    debugPrint("Now loc");
 
     // When we reach here, permissions are granted and we can
     // continue accessing the position of the device.
-    return await Geolocator.getCurrentPosition();
+    return location;
   }
-  getWeatherData(String lat, String lon) async {
-    var url = Uri.parse("https://api.openweathermap.org/data/2.5/weather?lat=$lat&lon=$lon&appid=f16b5b11d45fae7731e545ca034d3b44");
-    setLoading(true);
-    try {
-      await http.post(url,body:jsonEncode({})).then((response) async {
-        debugPrint(response.body);
-        var res = jsonDecode(response.body);
-        if (response.statusCode != 200 || res["success"] == false) {
-        }else{
+  _getWeatherData(){
+    debugPrint("Weather data");
+    try{
+      determinePosition().then((value){
+        debugPrint("Weather data - ${value.longitude}");
 
-        }
+        BlocProvider.of<WeatherCubit>(context).fetchWeather(value);
+        BlocProvider.of<WeatherCubit>(context).fetchWeather(value);
       });
-    } catch (e) {
-      debugPrint("$e");
+    }catch(error){
+      debugPrint("An error occurred" + error.toString());
     }
-  }
 
-  getData(){
-    _determinePosition().then((value){
-      getWeatherData(value.latitude.toString(), value.longitude.toString());
-    }).catchError((error){
-      // ToDo: Show error here
-    });
   }
-
+  void setAppColors(String weatherStatus){
+    Color color = appSunnyColor;
+    if(weatherStatus=="cloudy") color = appCloudyColor;
+    if(weatherStatus=="rainy") color = appRainyColor;
+    setStatusBarColor(color, statusBarIconBrightness: Brightness.light);
+      _backgroundColor = color;
+  }
   @override
   void initState() {
-    getData();
+    _getWeatherData();
     super.initState();
+  }
+  Divider appDivider({Color color = Colors.white}) {
+    return Divider(
+      height: 1,
+      color: color,
+      thickness: 1,
+    );
   }
 
   @override
   Widget build(BuildContext context){
     return Scaffold(
-      body: Container(
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,elevation: 0,
+        leading: IconButton(icon: Icon(Icons.menu), iconSize: 30, onPressed: () {  },),// Status bar color
+      ),
+      body: BlocBuilder<WeatherCubit, WeatherState>(
+        bloc: BlocProvider.of<WeatherCubit>(context),
+  builder: (context, state) {
+          if(state is! WeatherInitial && state is! WeatherLoading){
+            setAppColors(state.weather!.daily.weather.image);
+          }
+    return Container(
         decoration: BoxDecoration(color: _backgroundColor),
         child: Column(
           children: [
             Container(
               height: MediaQuery.of(context).size.height/2,
               decoration: BoxDecoration(image: DecorationImage(
-                image: AssetImage(_topImage),
-                fit: BoxFit.cover
+                  image: (state is WeatherInitial || state is WeatherLoading)?
+                  AssetImage("assets/images/sea_sunny.png"):
+                  AssetImage("assets/images/sea_${state.weather!.daily.weather.image}.png"),
+                  fit: BoxFit.cover
               )),
-            )
+              child: SizedBox(
+                height: 50,
+                width: MediaQuery.of(context).size.width,
+                child: (state is WeatherInitial || state is WeatherLoading)?
+                const Center(child: Text("Loading")):
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text("${state.weather!.daily.main.temp}°", style: mainTemperatureStyle,),
+                    Text(state.weather!.daily.weather.main.toUpperCase(), style: mainTemperatureDescriptionStyle,)
+                  ],
+                ),
+              ),
+            ),
+            if(state is WeatherSuccess)
+              Padding(
+                padding: EdgeInsets.only(left:10, top: 8, bottom: 8),
+                child: Row(
+                children: [
+                  Expanded(child: Center(
+                    child: Column(children: [
+                      Text("${state.weather!.daily.main.temp_min}°", style: minMaxTemperatureStyle,),
+                      3.height,
+                      const Text("min", style: subTitleStyle),
+                    ],),
+                  )),
+                  Expanded(child: Center(
+                    child: Column(children: [
+                      Text("${state.weather!.daily.main.temp}°", style: minMaxTemperatureStyle,),
+                      3.height,
+                      const Text("current", style: subTitleStyle),
+                    ],),
+                  )),
+                  Expanded(child: Center(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                      Text("${state.weather!.daily.main.temp_max}°", style: minMaxTemperatureStyle,),
+                      3.height,
+                      const Text("max", style: subTitleStyle,),
+                    ],),
+                  ))
+                ],
+              ),
+              ),
+            if(state is WeatherSuccess) appDivider(),
+            if(state is WeatherSuccess)
+              Expanded(child: ListView.builder(
+                padding: EdgeInsets.zero,
+                itemCount: state.weather!.weekly.length,
+                  itemBuilder: (BuildContext context, int index){
+                  WeatherObject currentDay = state.weather!.weekly[index];
+                  return Padding(
+                      padding: EdgeInsets.only(left:10, top:8, bottom: 8),
+                  child: Row(
+                    children: [
+                      Expanded(child: Text(DateFormat('EEEE').format(currentDay.date), style: minMaxTemperatureStyle,)),
+                      Expanded(child: Center(
+                        child: Image(image: AssetImage("assets/icons/${currentDay.weather.icon}")),),
+                      ),
+                      Expanded(child: Center(
+                        child: Text("${currentDay.main.temp}°", style: minMaxTemperatureStyle,),
+                      )),
+                    ],
+                  ),);
+                  })),
           ],
         ),
-      ),
+      );
+  },
+),
     );
   }
 }
