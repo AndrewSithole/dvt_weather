@@ -38,9 +38,9 @@ class WeatherDetail{
 
 class MainWeatherData{
   final int temp;
-  final int temp_max;
+  int temp_max;
   final int feels_like;
-  final int temp_min;
+  int temp_min;
   final int pressure;
   final int humidity;
   MainWeatherData({
@@ -52,7 +52,6 @@ class MainWeatherData{
     required this.humidity,
   });
   factory MainWeatherData.fromMap(Map<String, dynamic> map) {
-    debugPrint(map.toString());
     return MainWeatherData(
       temp: map['temp'].round(),
       feels_like: map['feels_like'].round(),
@@ -73,7 +72,6 @@ class WeatherObject{
     required this.date,
   });
   factory WeatherObject.fromMap(Map<String, dynamic> map) {
-    debugPrint("The date dt is: ${map["dt"]}");
     return WeatherObject(
       date: DateTime.fromMillisecondsSinceEpoch(map["dt"]*1000),
       weather: WeatherDetail.fromMap(map["weather"][0]),

@@ -7,9 +7,9 @@ import 'package:meta/meta.dart';
 part 'internet_state.dart';
 
 class InternetCubit extends Cubit<InternetState> {
-  final Connectivity connectivity;
+  Connectivity connectivity = Connectivity();
   late StreamSubscription connectivityStreamSubscription;
-  InternetCubit({required this.connectivity})
+  InternetCubit()
       : super(InternetLoading()) {
     connectivityStreamSubscription =
         connectivity.onConnectivityChanged.listen((connectivityResult) {
@@ -28,9 +28,5 @@ class InternetCubit extends Cubit<InternetState> {
 
   void emitInternetDisconnected() => emit(InternetDisconnected());
 
-  @override
-  Future<void> close() {
-    connectivityStreamSubscription.cancel();
-    return super.close();
-  }
+
 }

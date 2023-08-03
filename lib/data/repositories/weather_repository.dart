@@ -17,31 +17,25 @@ class WeatherRepository{
     try{
       var weatherData = await WeatherAPI.getDailyWeatherByCity(city, units);
       Map<String, dynamic> rawWeather = jsonDecode(weatherData.body);
-      debugPrint(weatherData.body);
       return WeatherObject.fromMap(rawWeather);
     }catch(error){
       debugPrint(error.toString());
       return Future.error(error);
     }
   }
-  Future<List<WeatherObject>> fetchWeatherForecastByPosition(Position position, String units) async {
+  Future<Map<String, dynamic>> fetchWeatherForecastByPosition(Position position, String units) async {
     // Fetch weather data from OpenWeatherMap API.
     var weatherData = await WeatherAPI.getWeeklyWeather(position, units);
     Map<String, dynamic> rawWeather = jsonDecode(weatherData.body);
-    List<WeatherObject> weather = [];
-    int i = 0;
-    rawWeather["list"].forEach((value) {
-      if (i%8==4)weather.add(WeatherObject.fromMap(value));
-      i++;
-    });
-    return weather;
+
+    return rawWeather;
   }
   Future<List<WeatherObject>> fetchWeatherForecastByCity(String city, String units) async {
     // Fetch weather data from OpenWeatherMap API.
     var weatherData = await WeatherAPI.getWeeklyWeatherByCity(city, units);
     Map<String, dynamic> rawWeather = jsonDecode(weatherData.body);
     List<WeatherObject> _weather = [];
-    rawWeather["list"].forEach((key, value) {
+    rawWeather["list"].forEach((value) {
       _weather.add(WeatherObject.fromMap(value));
     });
     return _weather;

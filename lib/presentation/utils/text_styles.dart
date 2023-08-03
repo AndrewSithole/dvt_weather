@@ -2,7 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 
-const TextStyle mainTemperatureStyle = TextStyle(fontSize: 50, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 3);
+const TextStyle mainTemperatureStyle = TextStyle(fontSize: 60, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 3);
 
 const TextStyle mainTemperatureDescriptionStyle = TextStyle(fontSize: 24, fontWeight: FontWeight.w500, color: Colors.white, letterSpacing: 3);
 
