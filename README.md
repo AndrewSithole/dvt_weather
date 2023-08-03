@@ -43,7 +43,7 @@ Build:
 
     flutter run
 
-Additional notes
+### Additional notes
 The app uses the OpenWeatherMap API: https://openweathermap.org/api to fetch weather data.
 The app is designed to be responsive, so it will look good on both mobile and desktop devices.
 The app is fully unit tested.
