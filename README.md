@@ -38,7 +38,11 @@ flutter_bloc: This library is used to implement the cubit architecture.
 ## How to build the project
 To build the project, you need to have Flutter installed. Once you have Flutter installed, you can run the following command to build the project:
 
-flutter run
+
+Build:
+
+    flutter run
+
 Additional notes
 The app uses the OpenWeatherMap API: https://openweathermap.org/api to fetch weather data.
 The app is designed to be responsive, so it will look good on both mobile and desktop devices.
