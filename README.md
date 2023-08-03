@@ -39,8 +39,6 @@ flutter_bloc: This library is used to implement the cubit architecture.
 To build the project, you need to have Flutter installed. Once you have Flutter installed, you can run the following command to build the project:
 
 
-Build:
-
     flutter run
 
 ### Additional notes
