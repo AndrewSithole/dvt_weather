@@ -1,4 +1,6 @@
+import 'package:dvt_weather/presentation/utils/colors.dart';
 import 'package:flutter/material.dart';
+import 'package:nb_utils/nb_utils.dart';
 
 Drawer getDrawer(BuildContext context){
   return Drawer(
@@ -11,22 +13,21 @@ Drawer getDrawer(BuildContext context){
       children: [
         const DrawerHeader(
           decoration: BoxDecoration(
-            color: Colors.blue,
+            color: appSunnyColor,
           ),
-          child: Text('Drawer Header'),
+          child: Text('App menu', style: TextStyle(color: Colors.white),),
         ),
         ListTile(
-          title: const Text('Item 1'),
+          title: const Text('Search location'),
           onTap: () {
-            // Update the state of the app.
-            // ...
+            toasty(context, "Coming soon");
           },
         ),
         ListTile(
-          title: const Text('Item 2'),
+          title: const Text('Preferences'),
           onTap: () {
-            // Update the state of the app.
-            // ...
+            toasty(context, "Coming soon");
+
           },
         ),
       ],
