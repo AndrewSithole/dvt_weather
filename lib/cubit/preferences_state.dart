@@ -2,7 +2,7 @@ part of 'preferences_cubit.dart';
 
 @immutable
 abstract class PreferencesState {
-  final PreferenceModel preferences = PreferenceModel(theme: defaultTheme, units: "metric");
+  final PreferenceModel preferences = PreferenceModel(theme: defaultTheme, units: "metric", homeImage: "sunny");
 }
 enum WeatherUnits{
   metric,
@@ -10,7 +10,7 @@ enum WeatherUnits{
   imperial
 }
 class PreferencesInitial extends PreferencesState {
-  final PreferenceModel preferences = PreferenceModel(theme: defaultTheme, units: "metric");
+  final PreferenceModel preferences = PreferenceModel(theme: defaultTheme, units: "metric", homeImage: "sunny");
 }
 class PreferencesChanged extends PreferencesState {
   final PreferenceModel preferences;

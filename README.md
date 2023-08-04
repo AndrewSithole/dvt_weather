@@ -7,10 +7,10 @@ This weather app is built using Flutter 3 with the cubit architecture to manage 
 
 ### The app uses the following conventions:
 
-All files are named in PascalCase.
+All files are named in snake_case.
 All constants are named in UPPERCASE.
-All variables are named in lowercase with underscores separating words.
-All functions are named in lowercase with underscores separating words.
+All variables are named in snake_case.
+All functions are named in snake_case.
 All classes are named in PascalCase.
 
 ### The app is structured as follows:
@@ -35,14 +35,23 @@ flutter_spinkit: This library is used to display a loading indicator.
 http: This library is used to make HTTP requests.
 intl: This library is used to manage dates and times.
 flutter_bloc: This library is used to implement the cubit architecture.
+equatable: Gives us the ability to compare instances of the same class
+bloc_test: To test the cubits
 ## How to build the project
 To build the project, you need to have Flutter installed. Once you have Flutter installed, you can run the following command to build the project:
 
-
     flutter run
 
+## Testing
+To test the project, you can run the following command:
+
+    flutter test
+
 ### Additional notes
+The API Key is hard coded to allow for tests. It will soon be moved to a file which is not tracked by git
 The app uses the OpenWeatherMap API: https://openweathermap.org/api to fetch weather data.
-The app is designed to be responsive, so it will look good on both mobile and desktop devices.
 The app is fully unit tested.
+Possible areas of improvement include:
+ - Displaying the offline status if the user is not connected to the internet
+ - Adding more icons to display the different weather states 
 

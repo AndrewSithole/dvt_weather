@@ -1,6 +1,6 @@
-import 'package:dvt_weather/logic/cubit/preferences_cubit.dart';
-import 'package:dvt_weather/logic/cubit/weather_cubit.dart';
-import 'package:dvt_weather/logic/cubit/location_cubit.dart';
+import 'package:dvt_weather/cubit/preferences_cubit.dart';
+import 'package:dvt_weather/cubit/weather_cubit.dart';
+import 'package:dvt_weather/cubit/location_cubit.dart';
 import 'package:dvt_weather/presentation/screens/app_home_screen.dart';
 import 'package:dvt_weather/presentation/screens/app_splash_screen.dart';
 import 'package:flutter/material.dart';
@@ -21,12 +21,10 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     PreferencesCubit preferencesCubit = PreferencesCubit(preferences);
-    LocationCubit locationCubit = LocationCubit();
     return MultiBlocProvider(
       providers: [
         BlocProvider(create: (context) => preferencesCubit),
-        BlocProvider(create: (context) => WeatherCubit(locationCubit, preferencesCubit)),
-        BlocProvider(create: (context) => locationCubit),
+        BlocProvider(create: (context) => WeatherCubit(preferencesCubit)),
       ],
       child: BlocBuilder<PreferencesCubit, PreferencesState>(
           builder: (context, state) {

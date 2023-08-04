@@ -1,8 +1,9 @@
 import 'dart:convert';
-import 'package:dvt_weather/logic/cubit/location_cubit.dart';
+import 'package:dvt_weather/cubit/location_cubit.dart';
+import 'package:dvt_weather/cubit/preferences_cubit.dart';
 import 'package:intl/intl.dart';
 import 'package:dvt_weather/data/models/weather_model.dart';
-import 'package:dvt_weather/logic/cubit/weather_cubit.dart';
+import 'package:dvt_weather/cubit/weather_cubit.dart';
 import 'package:dvt_weather/presentation/utils/text_styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -52,7 +53,7 @@ class AppHomeScreenState extends State<AppHomeScreen>{
         bloc: BlocProvider.of<WeatherCubit>(context),
   builder: (context, state) {
 
-          if(state is! WeatherInitial && state is! WeatherLoading){
+          if(state.status == WeatherStatus.success){
             setAppColors(state.weather!.daily.weather.image);
           }
     return Column(
@@ -60,20 +61,19 @@ class AppHomeScreenState extends State<AppHomeScreen>{
         Container(
           height: MediaQuery.of(context).size.height/2,
           decoration: BoxDecoration(image: DecorationImage(
-              image: (state is WeatherInitial || state is WeatherLoading)?
-              const AssetImage("assets/images/forest_sunny.png"):
-              AssetImage("assets/images/forest_${state.weather!.daily.weather.image}.png"),
+              image:
+              AssetImage("assets/images/forest_${BlocProvider.of<PreferencesCubit>(context).state.preferences.homeImage}.png"),
               fit: BoxFit.cover
           )),
           child: SizedBox(
             height: 50,
             width: MediaQuery.of(context).size.width,
-            child: (state is WeatherInitial || state is WeatherLoading)?
+            child: (state.status == WeatherStatus.loading || state.status == WeatherStatus.initial)?
             const SpinKitCircle(
               color: Colors.white,
               size: 50.0,
-            ):
-            Column(
+            ):(state.status == WeatherStatus.success)?
+            (Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -81,10 +81,10 @@ class AppHomeScreenState extends State<AppHomeScreen>{
                 Text(state.weather!.daily.weather.main.toUpperCase(), style: mainTemperatureDescriptionStyle,),
                 20.height
               ],
-            ),
+            )): Text("An error occurred"),
           ),
         ),
-        if(state is WeatherSuccess)
+        if(state.status == WeatherStatus.success)
           Padding(
             padding: const EdgeInsets.only(left:15, top: 8, bottom: 8, right: 15),
             child: Row(
@@ -116,8 +116,8 @@ class AppHomeScreenState extends State<AppHomeScreen>{
             ],
           ),
           ),
-        if(state is WeatherSuccess) appDivider(),
-        if(state is WeatherSuccess)
+        if(state.status == WeatherStatus.success) appDivider(),
+        if(state.status == WeatherStatus.success)
           Expanded(child: ListView.builder(
             padding: EdgeInsets.zero,
             itemCount: state.weather!.weekly.length,

@@ -1,5 +1,5 @@
-import 'package:dvt_weather/logic/cubit/location_cubit.dart';
-import 'package:dvt_weather/logic/cubit/preferences_cubit.dart';
+import 'package:dvt_weather/cubit/location_cubit.dart';
+import 'package:dvt_weather/cubit/preferences_cubit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:nb_utils/nb_utils.dart';
@@ -7,7 +7,7 @@ import 'package:dvt_weather/presentation/screens/app_home_screen.dart';
 import 'package:dvt_weather/presentation/utils/colors.dart';
 import 'dart:io';
 
-import '../../logic/cubit/weather_cubit.dart';
+import '../../cubit/weather_cubit.dart';
 
 class AppSplashScreen extends StatefulWidget {
   static String tag = '/AppSplashScreen';
@@ -43,11 +43,10 @@ class AppSplashScreenState extends State<AppSplashScreen> {
   }
   void _getPosition(){
     BlocProvider.of<WeatherCubit>(context).listenToLocationState();
-    BlocProvider.of<LocationCubit>(context).determinePosition().then((value){
+    BlocProvider.of<WeatherCubit>(context).fetchWeather().then((value) async {
+      await Future.delayed(Duration(seconds: 1));
       if (mounted) finish(context);
       AppHomeScreen().launch(context, isNewTask: true);
-    }).catchError((error){
-      toasty(context, error.toString());
     });
   }
 

@@ -1,4 +1,5 @@
 import 'package:bloc/bloc.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:meta/meta.dart';
@@ -6,7 +7,7 @@ import 'package:meta/meta.dart';
 part 'location_state.dart';
 
 class LocationCubit extends Cubit<LocationState> {
-  LocationCubit() : super(LocationInitial());
+  LocationCubit() : super(const LocationState());
 
   Future<Position> determinePosition() async {
     bool serviceEnabled;
@@ -18,7 +19,7 @@ class LocationCubit extends Cubit<LocationState> {
     debugPrint("Service enabled? ${serviceEnabled.toString()}");
     if (!serviceEnabled) {
       String error = 'Location services are disabled.';
-      emit(LocationError(error, ErrorStates.serviceDisabled));
+      emit(LocationState(status: LocationStatus.error, errorMessage: error));
       return Future.error(error);
     }
 
@@ -27,7 +28,7 @@ class LocationCubit extends Cubit<LocationState> {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         String error = 'Location permissions are denied';
-        emit(LocationError(error, ErrorStates.permissionDenied));
+        emit(LocationState(status: LocationStatus.error, errorMessage: error));
         return Future.error(error);
       }
     }
@@ -35,16 +36,16 @@ class LocationCubit extends Cubit<LocationState> {
     if (permission == LocationPermission.deniedForever) {
       // Permissions are denied forever, handle appropriately.
       String error = 'Location permissions are permanently denied, we cannot request permissions.';
-      emit(LocationError(error, ErrorStates.permanentlyDenied));
+      emit(LocationState(status: LocationStatus.error, errorMessage: error));
       return Future.error(error);
     }
     try{
       Position location = await Geolocator.getCurrentPosition();
-      emit(LocationSuccess(location));
+      emit(LocationState(status: LocationStatus.success, position: location));
       return location;
     }catch(error){
       String error = 'A location error occurred';
-      emit(LocationError(error, ErrorStates.other));
+      emit(LocationState(status: LocationStatus.error, errorMessage: error));
       return Future.error(error);
     }
 

@@ -1,3 +1,4 @@
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 
 class WeatherDetail{
@@ -79,11 +80,15 @@ class WeatherObject{
     );
   }
 }
-class WeatherData{
+class WeatherData extends Equatable{
   final WeatherObject daily;
   final List<WeatherObject> weekly;
   WeatherData({
     required this.daily,
     required this.weekly,
   });
+
+  @override
+  // TODO: implement props
+  List<Object?> get props => throw UnimplementedError();
 }

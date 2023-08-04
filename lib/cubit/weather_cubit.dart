@@ -3,12 +3,11 @@ import 'dart:async';
 import 'package:bloc/bloc.dart';
 import 'package:dvt_weather/data/models/weather_model.dart';
 import 'package:dvt_weather/data/repositories/weather_repository.dart';
-import 'package:dvt_weather/logic/cubit/internet_cubit.dart';
-import 'package:dvt_weather/logic/cubit/preferences_cubit.dart';
+import 'package:dvt_weather/cubit/preferences_cubit.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:meta/meta.dart';
-import 'package:nb_utils/nb_utils.dart';
 
 import 'location_cubit.dart';
 
@@ -16,14 +15,17 @@ part 'weather_state.dart';
 
 class WeatherCubit extends Cubit<WeatherState>{
   final WeatherRepository _repository = WeatherRepository();
-  final LocationCubit locationCubit;
+  final LocationCubit locationCubit = LocationCubit();
   final PreferencesCubit preferenceCubit;
   StreamSubscription<PreferencesState>? preferenceSubscription;
   StreamSubscription<LocationState>? locationSubscription;
+  // Adding the ability to pass location for testing purposes
+  Position? position;
 
-  WeatherCubit(this.locationCubit, this.preferenceCubit) : super(WeatherInitial()){
-    // StreamSubscription streamSubscription = InternetCubit().
-
+  WeatherCubit(this.preferenceCubit, {this.position}) : super(WeatherState()){
+    if(position == null) {
+      locationCubit.determinePosition().then((value) => null);
+    }
   }
   void listenToLocationState() {
     debugPrint("listening to state changes");
@@ -31,32 +33,52 @@ class WeatherCubit extends Cubit<WeatherState>{
     locationSubscription = locationCubit.stream.listen((locationState) {
       debugPrint("Location state changed: ${locationState.toString()}");
       // If the location state is changed, update the WeatherState.
-      if (locationState is LocationSuccess) {
-        fetchWeather(locationState.position);
+      if (locationState.status == LocationStatus.success) {
+        fetchWeather();
       }
     });
     preferenceSubscription = preferenceCubit.stream.listen((preferenceState) {
       debugPrint("Location state changed: ${preferenceState.toString()}");
       // If the location state is changed, update the WeatherState.
-      if (preferenceState is UnitsChanged && locationCubit.state is LocationSuccess) {
-        fetchWeather(locationCubit.state.position);
+      if (preferenceState is UnitsChanged && locationCubit.state.status == LocationStatus.success) {
+        fetchWeather();
       }
     });
 
   }
-  Future<void> fetchWeather(Position position, {String units = "metric"}) async {
-    debugPrint("Position is ${position.longitude}");
-    emit(WeatherLoading());
+
+  Future<void> fetchWeather(
+      {String units = "metric",
+        bool testLoading = false,
+      bool testNoLocation = false}) async {
+    emit(const WeatherState().copyWith(status: WeatherStatus.loading));
+    if(testLoading) return;
     // Fetch weather data from repository.
-    _repository.fetchDailyWeatherByPosition(position, units)
-        .then((weatherData){
-      debugPrint("Emitted the items - ${weatherData.weather.main}");
-      fetchForecast(position, weatherData);
-    }).catchError((value) {
-      debugPrint("An error occurred - ${value.toString()}");
-      emit(WeatherError());
-    });
+    Position? location;
+    if (position != null) {
+      debugPrint("location is not null");
+      location = position;
+    } else if (locationCubit.state.status == LocationStatus.success) {
+      location = locationCubit.state.position;
+    }
+    if (location != null && !testNoLocation) {
+      try{
+        debugPrint("Fetching weather data");
+        WeatherObject weatherData  =  await _repository
+                .fetchDailyWeatherByPosition(location, units);
+        debugPrint("Emitted the items - ${weatherData.weather.main}");
+        await fetchForecast(location, weatherData);
+      }catch(error) {
+        debugPrint("An error occurred - ${error.toString()}");
+        emit(const WeatherState().copyWith(status: WeatherStatus.error));
+      }
+    }
+    else{
+      debugPrint("Location is null");
+      emit(const WeatherState().copyWith(status: WeatherStatus.error));
+    }
   }
+
   Future<void> fetchForecast(Position position, WeatherObject todayWeather, {String units = "metric"}) async {
     // Fetch weather data from repository.
     _repository.fetchWeatherForecastByPosition(position, units)
@@ -78,11 +100,11 @@ class WeatherCubit extends Cubit<WeatherState>{
       });
       WeatherData data = WeatherData(daily: todayWeather, weekly: weather);
       preferenceCubit.updateTheme(data.daily.weather.image);
-      emit(WeatherSuccess(data));
+      emit(const WeatherState().copyWith(status: WeatherStatus.success, weather: data));
           debugPrint("Emitted the items");
     }).catchError((error) {
       debugPrint("An error occurred - ${error.toString()}");
-      emit(WeatherError());
+      emit(const WeatherState().copyWith(status: WeatherStatus.error));
     });
   }
 

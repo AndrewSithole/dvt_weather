@@ -3,7 +3,7 @@ import 'dart:convert';
 
 import 'package:bloc/bloc.dart';
 import 'package:dvt_weather/data/models/preference_model.dart';
-import 'package:dvt_weather/logic/cubit/weather_cubit.dart';
+import 'package:dvt_weather/cubit/weather_cubit.dart';
 import 'package:dvt_weather/presentation/utils/themes.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
@@ -14,7 +14,7 @@ part 'preferences_state.dart';
 
 class PreferencesCubit extends Cubit<PreferencesState> {
   final SharedPreferences _preferences;
-  PreferenceModel preferenceObject = PreferenceModel(theme: defaultTheme, units: "metric");
+  PreferenceModel preferenceObject = PreferenceModel(theme: defaultTheme, units: "metric", homeImage: "sunny");
 
   PreferencesCubit(this._preferences) : super(PreferencesInitial());
 
@@ -45,6 +45,7 @@ class PreferencesCubit extends Cubit<PreferencesState> {
 
     // Set the theme in shared preferences.
     _preferences.setString('theme', themeName);
+    preferenceObject.homeImage = themeName;
     preferenceObject.theme = themeData;
     // Update the preferences state.
     emit(PreferencesChanged(preferences: preferenceObject));
@@ -60,9 +61,9 @@ class PreferencesCubit extends Cubit<PreferencesState> {
         themeData = rainyTheme;
       }
       preferenceObject.theme = themeData;
-      emit(PreferencesChanged(preferences: preferenceObject));
+      preferenceObject.homeImage = themeName;
     }
-    // Update the preferences state.
+    emit(PreferencesChanged(preferences: preferenceObject));
   }
 
 }
